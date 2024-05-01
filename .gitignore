@@ -1,0 +1,5 @@
+LLM/whisper_tiny_ct/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+__pycache__/
