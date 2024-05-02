@@ -59,6 +59,8 @@ class TranscriptionServer:
         frame_data = websocket.recv()
         if frame_data == b"END_OF_AUDIO":
             return False
+
+
         return np.frombuffer(frame_data, dtype=np.float32)
 
     def handle_new_connection(self, websocket, faster_whisper_custom_model_path):
@@ -95,6 +97,7 @@ class TranscriptionServer:
             # if self.backend == "tensorrt":
             #     client.set_eos(True)
             client.disconnect()
+            # websocket.close()
             return False
 
         # if self.backend == "tensorrt":
@@ -271,6 +274,7 @@ class ServeClientFasterWhisper(ServeClientBase):
         # UTTRENCE END COUNT
         self.uttrence_end_count = 0
         self.uttrence_bool = False
+        self.start_speeking = False
 
 
 
@@ -466,14 +470,21 @@ class ServeClientFasterWhisper(ServeClientBase):
                     time.sleep(0.25)    # wait for voice activity, result is None when no voice activity
                     print(self.timestamp_offset,self.prev_timestamp_offset)
                     print(self.timestamp_offset - self.prev_timestamp_offset)
-                    if self.timestamp_offset - self.prev_timestamp_offset > 3:
-                        if self.uttrence_bool == False:
-                            self.uttrence_end()
-                            self.uttrence_bool = True
-                        if self.timestamp_offset - self.prev_timestamp_offset > 5:
-                            self.disconnect()
+
+                    if self.start_speeking:
+                        if self.timestamp_offset - self.prev_timestamp_offset > 2:
+                            if self.uttrence_bool == False:
+                                self.uttrence_end()
+                                self.uttrence_bool = True
+                                # if self.timestamp_offset - self.prev_timestamp_offset > 5:
+                                #     self.disconnect()
+                        if self.timestamp_offset - self.prev_timestamp_offset > 10:
+                            if self.uttrence_bool == False:
+                                self.uttrence_end()
+                                self.uttrence_bool = True
                     continue
                 else:
+                    self.start_speeking = True
                     self.prev_timestamp_offset_set = False
                     self.uttrence_bool = False
                 self.handle_transcription_output(result, duration)

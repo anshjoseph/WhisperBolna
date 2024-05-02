@@ -1,0 +1,10 @@
+region: us
+version: '2'
+authtoken: 1SekNJhsocMQjLXdHlEeJBvXkGz_7sPqzgFC26oiUmE9gkFBN
+tunnels:
+  twilio-app:
+    addr: 8001
+    proto: http
+  bolna-app:
+    addr: 5001
+    proto: http

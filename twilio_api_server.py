@@ -108,4 +108,4 @@ async def twilio_callback(ws_url: str = Query(...), agent_id: str = Query(...), 
     except Exception as e:
         print(f"Exception occurred in twilio_callback: {e}")
 if __name__ == "__main__":
-    uvicorn.run('twilio_api_server:app',port=8001,reload=True)
+    uvicorn.run('twilio_api_server:app',port=8001,host='0.0.0.0',reload=True)

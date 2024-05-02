@@ -369,7 +369,7 @@ class ServeClientBase(object):
         self.t_start = None
         self.exit = False
         self.same_output_threshold = 0
-        self.show_prev_out_thresh = 3   # if pause(no output from whisper) show previous output for 5 seconds
+        self.show_prev_out_thresh = 0.5   # if pause(no output from whisper) show previous output for 5 seconds
         self.add_pause_thresh = 0.8       # add a blank to segment list as a pause(no speech) for 3 seconds
         self.transcript = []
         self.send_last_n_segments = 10

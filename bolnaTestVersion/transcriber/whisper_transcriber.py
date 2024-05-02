@@ -96,7 +96,7 @@ class WhisperTranscriber(BaseTranscriber):
     async def toggle_connection(self):
         self.connection_on = False
         if self.heartbeat_task is not None:
-            self.heartbeat_task = None
+            self.heartbeat_task.send(b"END_OF_AUDIO")
         self.sender_task.cancel()
 
 
@@ -148,7 +148,7 @@ class WhisperTranscriber(BaseTranscriber):
         async for msg in ws:
             try:
                 msg:dict = json.loads(msg)
-
+                print(msg)
                 # If connection_start_time is None, it is the duratons of frame submitted till now minus current time
                 if self.connection_start_time is None:
                     self.connection_start_time = (time.time() - (self.num_frames * self.audio_frame_duration))
@@ -164,7 +164,9 @@ class WhisperTranscriber(BaseTranscriber):
 
                 # TODO LATENCY STUFF
                 if "message" in msg and msg["message"] == "UTTERANCE_END":
-
+                    if len(self.segments_list) >= 0:
+                        self.finalized_transcript = self.finalized_transcript + " " + self.segments_list[-1].get("text")
+                    
 
                     logger.info(
                         "Transcriber Latency: {} for request id {}".format(time.time() - self.audio_submission_time,
@@ -179,8 +181,8 @@ class WhisperTranscriber(BaseTranscriber):
                     self.meta_info["utterance_end"] = self.connection_start_time + float(self.whole_segment_list[-1].get('end'))
                     self.meta_info["time_received"] = time.time()
                     self.meta_info["transcriber_latency"] = None
-                    if self.curr_message == "":
-                        continue
+                    # if self.curr_message == "":
+                    #     continue
                     logger.info(f"Signalling the Task manager to start speaking")
                     yield create_ws_data_packet(self.finalized_transcript, self.meta_info)
                     self.curr_message = ""
@@ -227,7 +229,7 @@ class WhisperTranscriber(BaseTranscriber):
                             self.finalized_transcript += " " + self.segments_list[self.seg_ptr]  # Just get the whole transcript as there's mismatch at times
                             self.meta_info["is_final"] = True
                             self.current_seg_ptr = self.seg_ptr
-                            logger.info(f"{self.finalized_transcript}")
+                            logger.info(f"final segment {self.finalized_transcript}")
 
                     # if  msg["is_final"] is True:
                     #     self.finalized_transcript += " " + transcript  # Just get the whole transcript as there's mismatch at times
@@ -311,7 +313,7 @@ class WhisperTranscriber(BaseTranscriber):
                 if self.stream:
                     self.sender_task = asyncio.create_task(self.sender_stream(whisper_ws))
                     # self.heartbeat_task = asyncio.create_task(self.send_heartbeat(whisper_ws))
-                    self.heartbeat_task = "something"
+                    self.heartbeat_task = whisper_ws
                     async for message in self.receiver(whisper_ws):
                         if self.connection_on:
                             await self.push_to_transcriber_queue(message)

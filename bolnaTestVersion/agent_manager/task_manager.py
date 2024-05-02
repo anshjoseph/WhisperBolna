@@ -522,7 +522,8 @@ class TaskManager(BaseManager):
                 self.synthesizer_tasks.append(asyncio.create_task(
                         self._synthesize(create_ws_data_packet(next_state['audio'], meta_info, is_md5_hash=True))))
             logger.info(f"Interim history after the LLM task {messages}")
-            self.llm_response_generated = True
+            # self.llm_response_generated = True
+            self.llm_response_generated = False
             self.interim_history = copy.deepcopy(messages)
             if self.callee_silent:
                 logger.info("When we got utterance end, maybe LLM was still generating response. So, copying into history")

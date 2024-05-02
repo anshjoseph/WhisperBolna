@@ -96,4 +96,4 @@ async def websocket_endpoint(agent_id: str, websocket: WebSocket, user_agent: st
         logger.error(f"error in executing {e}")
 if __name__ == "__main__":
     print(os.getenv('REDIS_URL'))
-    uvicorn.run('BolanaServer:app',port=5001,reload=True)
+    uvicorn.run('BolnaServer:app',port=5001,host='0.0.0.0',reload=True)
